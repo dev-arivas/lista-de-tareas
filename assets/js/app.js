@@ -1,82 +1,60 @@
 document.getElementById('task-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Evita el envío del formulario
+    event.preventDefault();
 
-    // Obtener el valor de la tarea
     const taskInput = document.getElementById('task-input');
     const task = taskInput.value.trim();
+    const isEditing = taskInput.getAttribute('data-editing');
 
     if (task !== '') {
-        // Crear un elemento de lista para la nueva tarea
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.textContent = task;
+        if (isEditing) {
+            updateTaskInLocalStorage(isEditing, task);
+            document.querySelector(`[data-task="${isEditing}"]`).textContent = task;
+            taskInput.removeAttribute('data-editing');
+            document.querySelector('button[type="submit"]').textContent = 'Agregar';
+        } else {
+            addTask(task);
+            saveTaskInLocalStorage(task);
+        }
 
-        // Agregar botón para eliminar la tarea
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn-danger btn-sm';
-        deleteBtn.textContent = 'Eliminar';
-        li.appendChild(deleteBtn);
-
-        // Agregar la tarea a la lista
-        document.getElementById('task-list').appendChild(li);
-
-        // Guardar tarea en el almacenamiento local
-        saveTaskInLocalStorage(task);
-
-        // Limpiar el campo de entrada
         taskInput.value = '';
-
-        // Evento para eliminar la tarea
-        deleteBtn.addEventListener('click', function() {
-            li.remove();
-            removeTaskFromLocalStorage(task);
-        });
     }
 });
 
-// Función para guardar la tarea en el almacenamiento local
-function saveTaskInLocalStorage(task) {
-    let tasks = getTasksFromLocalStorage();
-    tasks.push(task);
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
+// Agregar función para editar tarea
+function addTask(task) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.textContent = task;
+    li.setAttribute('data-task', task);
 
-// Función para obtener las tareas del almacenamiento local
-function getTasksFromLocalStorage() {
-    let tasks;
-    if (localStorage.getItem('tasks') === null) {
-        tasks = [];
-    } else {
-        tasks = JSON.parse(localStorage.getItem('tasks'));
-    }
-    return tasks;
-}
+    // Botones de eliminar y editar
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-danger btn-sm';
+    deleteBtn.textContent = 'Eliminar';
+    li.appendChild(deleteBtn);
 
-// Función para eliminar la tarea del almacenamiento local
-function removeTaskFromLocalStorage(task) {
-    let tasks = getTasksFromLocalStorage();
-    tasks = tasks.filter(t => t !== task);
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-info btn-sm ms-2';
+    editBtn.textContent = 'Editar';
+    li.appendChild(editBtn);
 
-// Cargar tareas desde el almacenamiento local al iniciar
-document.addEventListener('DOMContentLoaded', function() {
-    let tasks = getTasksFromLocalStorage();
-    tasks.forEach(function(task) {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.textContent = task;
+    document.getElementById('task-list').appendChild(li);
 
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn-danger btn-sm';
-        deleteBtn.textContent = 'Eliminar';
-        li.appendChild(deleteBtn);
-
-        document.getElementById('task-list').appendChild(li);
-
-        deleteBtn.addEventListener('click', function() {
-            li.remove();
-            removeTaskFromLocalStorage(task);
-        });
+    // Eventos de eliminar y editar
+    deleteBtn.addEventListener('click', function() {
+        li.remove();
+        removeTaskFromLocalStorage(task);
     });
-});
+
+    editBtn.addEventListener('click', function() {
+        taskInput.value = task;
+        taskInput.setAttribute('data-editing', task);
+        document.querySelector('button[type="submit"]').textContent = 'Actualizar';
+    });
+}
+
+function updateTaskInLocalStorage(oldTask, newTask) {
+    let tasks = getTasksFromLocalStorage();
+    tasks = tasks.map(task => task === oldTask ? newTask : task);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
