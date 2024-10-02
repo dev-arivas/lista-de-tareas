@@ -74,3 +74,17 @@ document.getElementById('task-form').addEventListener('submit', function(event) 
     showAlert('Tarea agregada exitosamente', 'alert-success');
     // ...
 });
+
+document.getElementById('search-input').addEventListener('keyup', function(event) {
+    const searchTerm = event.target.value.toLowerCase();
+    const tasks = document.querySelectorAll('#task-list li');
+
+    tasks.forEach(task => {
+        const taskText = task.textContent.toLowerCase();
+        if (taskText.includes(searchTerm)) {
+            task.style.display = 'block';
+        } else {
+            task.style.display = 'none';
+        }
+    });
+});
