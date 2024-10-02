@@ -58,3 +58,19 @@ function updateTaskInLocalStorage(oldTask, newTask) {
     tasks = tasks.map(task => task === oldTask ? newTask : task);
     localStorage.setItem('tasks', JSON.stringify(tasks));
 }
+
+function showAlert(message, className) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${className} mt-3`;
+    alertDiv.textContent = message;
+    document.getElementById('alert-container').appendChild(alertDiv);
+
+    setTimeout(() => alertDiv.remove(), 3000);
+}
+
+// Modifica las funciones para mostrar alertas
+document.getElementById('task-form').addEventListener('submit', function(event) {
+    // ...
+    showAlert('Tarea agregada exitosamente', 'alert-success');
+    // ...
+});
